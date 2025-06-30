@@ -1,35 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ESP32 Tasks</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: sans-serif; padding: 1rem; background: #fafafa; }
-    h1 { text-align: center; }
-    ul { list-style: none; padding: 0; }
-    li { background: #fff; margin: .5rem 0; padding: .75rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    time { font-size: .8rem; color: #666; }
-  </style>
+    <meta charset="UTF-8">
+    <title>ESP32 Task Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <h1>ESP32 Tasks</h1>
-  <ul id="tasks"></ul>
+<div class="container mt-5">
+    <h1 class="mb-4">ESP32 Task Dashboard</h1>
+    <div id="alert" class="alert alert-info d-none" role="alert">
+        Loading tasks...
+    </div>
+    <table class="table table-bordered table-striped" id="tasks-table">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Device IP</th>
+                <th>Task</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Tasks will be inserted here -->
+        </tbody>
+    </table>
+</div>
 
-  <script>
-    async function refresh() {
-      const res = await fetch('/api/tasks');
-      const tasks = await res.json();
-      const ul = document.getElementById('tasks');
-      ul.innerHTML = '';
-      tasks.forEach(t => {
-        const li = document.createElement('li');
-        li.innerHTML = `<strong>${t.task}</strong><br><time>${new Date(t.timestamp).toLocaleString()}</time>`;
-        ul.appendChild(li);
-      });
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    async function fetchTasks() {
+        const alertBox = document.getElementById('alert');
+        try {
+            alertBox.classList.remove('d-none');
+            alertBox.textContent = 'Loading tasks...';
+            const response = await fetch('/api/tasks');
+            const data = await response.json();
+            const tasks = data.tasks || [];
+            const tbody = document.querySelector('#tasks-table tbody');
+            tbody.innerHTML = '';
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${task.id}</td>
+                    <td>${task.device}</td>
+                    <td>${task.task}</td>
+                    <td>${new Date(task.timestamp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            alertBox.classList.add('d-none');
+        } catch (error) {
+            alertBox.classList.remove('d-none');
+            alertBox.textContent = 'Failed to load tasks!';
+            alertBox.classList.replace('alert-info', 'alert-danger');
+        }
     }
-    setInterval(refresh, 5000);
-    refresh();
-  </script>
+
+    // Initial fetch and auto-refresh every 5 seconds
+    fetchTasks();
+    setInterval(fetchTasks, 5000);
+</script>
 </body>
 </html>

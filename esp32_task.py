@@ -3,7 +3,7 @@ import network, urequests, machine, time
 # ==== CONFIG ====
 WIFI_SSID = 'Netcom_Wifi'
 WIFI_PASS = '123456789'
-FLASK_URL = 'http://10.10.10.3:5000/api/tasks'  # ← update to your PC’s LAN IP
+FLASK_URL = 'http://frog01-40924.wykr.es/api/tasks'  # ← update to your PC’s LAN IP
 BUTTON_PIN = 0  # change if needed
 # ================
 
@@ -40,3 +40,4 @@ btn.irq(trigger=machine.Pin.IRQ_FALLING, handler=irq_handler)
 # Keep alive
 while True:
     time.sleep(10)
+    send_task(1)
